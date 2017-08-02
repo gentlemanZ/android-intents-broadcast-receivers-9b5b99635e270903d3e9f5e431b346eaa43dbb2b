@@ -12,6 +12,7 @@ import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -22,7 +23,10 @@ import com.teamtreehouse.musicmachine.models.Song;
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
     public static final String EXTRA_TITLE = "EXTRA_TITLE";
-    public static final String KEY_SONG = "song";
+    public static final String EXTRA_SONG = "EXTRA_SONG";
+    public static final int REQUEST_FAVORITE =0;
+    public static final String EXTRA_FAVORITE = "EXTRA_FAVORITE";
+    public static final String EXTRA_LIST_POSITION = "EXTRA_LIST_POSITION";
 
     private boolean mBound = false;
     private Button mDownloadButton;
@@ -100,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
         // Explicit Intent
         Intent intent = new Intent(this, DetailActivity.class);
         intent.putExtra(EXTRA_TITLE,"Gradle, Gradle, Gradle");
-        startActivity(intent);
+        startActivityForResult(intent, REQUEST_FAVORITE);
     }
 
     private void downloadSongs() {
@@ -109,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
         // Send Messages to Handler for processing
         for (Song song : Playlist.songs) {
             Intent intent = new Intent(MainActivity.this, DownloadIntentService.class);
-            intent.putExtra(KEY_SONG, song);
+            intent.putExtra(EXTRA_SONG, song);
             startService(intent);
         }
     }
@@ -131,6 +135,22 @@ public class MainActivity extends AppCompatActivity {
         if (mBound) {
             unbindService(mServiceConnection);
             mBound = false;
+        }
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_FAVORITE){
+            if (resultCode == RESULT_OK){
+                boolean result = data.getBooleanExtra(EXTRA_FAVORITE,false);
+                Log.i(TAG, "Is favorite? " + result);
+                int position = data.getIntExtra(EXTRA_LIST_POSITION, 0);
+                Playlist.songs[position].setIsFavorite(result);
+                mAdapter.notifyItemChanged(position);
+
+            }
         }
     }
 }
