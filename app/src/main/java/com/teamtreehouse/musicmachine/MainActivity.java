@@ -1,8 +1,10 @@
 package com.teamtreehouse.musicmachine;
 
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.Bundle;
@@ -11,6 +13,7 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -39,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
 
     private RelativeLayout mRootLayout;
     private PlaylistAdapter mAdapter;
+    private NetworkConnectionReceiver mReceiver = new NetworkConnectionReceiver();
 
     private ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
@@ -156,6 +160,22 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.i(TAG, "App is in the foreground...");
+        IntentFilter filter = new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
+        registerReceiver(mReceiver,filter);
+        IntentFilter customFilter = new IntentFilter(NetworkConnectionReceiver.NOTIFY_NETWORK_CHANGE);
+        LocalBroadcastManager.getInstance(this).registerReceiver(mLocalReceiver,customFilter);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.i(TAG, "App is in the background...");
+        unregisterReceiver(mReceiver);
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -171,4 +191,17 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+    private BroadcastReceiver mLocalReceiver = new BroadcastReceiver(){
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            boolean isConnected = intent.getBooleanExtra(NetworkConnectionReceiver.EXTRA_IS_CONNECTED,false);
+            if (isConnected){
+                Snackbar.make(mRootLayout,"Network is connected", Snackbar.LENGTH_LONG).show();
+            }else {
+                Snackbar.make(mRootLayout,"Network is not connected", Snackbar.LENGTH_LONG).show();
+            }
+        }
+    };
 }
