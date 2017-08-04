@@ -78,8 +78,8 @@ public class MainActivity extends AppCompatActivity {
         mDownloadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //downloadSongs();
-                testIntents();
+                downloadSongs();
+                //testIntents();
             }
         });
         mPlayButton.setOnClickListener(new View.OnClickListener() {
@@ -87,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (mBound) {
                     Intent intent = new Intent(MainActivity.this, PlayerService.class);
+                    intent.putExtra(EXTRA_SONG, Playlist.songs[0]);
                     startService(intent);
                     Message message = Message.obtain();
                     message.arg1 = 2;

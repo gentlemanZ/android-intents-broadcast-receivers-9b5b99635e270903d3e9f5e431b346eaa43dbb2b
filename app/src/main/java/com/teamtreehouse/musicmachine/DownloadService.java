@@ -1,5 +1,7 @@
 package com.teamtreehouse.musicmachine;
 
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
@@ -8,6 +10,7 @@ import android.support.annotation.Nullable;
 
 public class DownloadService extends Service {
     private static final String TAG = DownloadService.class.getSimpleName();
+
     private DownloadHandler mHandler;
 
     @Override
